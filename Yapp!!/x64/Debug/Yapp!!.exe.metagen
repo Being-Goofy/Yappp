@@ -32,6 +32,7 @@ Class Project1.MyForm1: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :System.Windows.Forms.Form
     Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
   Fields:
+    System.Windows.Forms.Panel messagePanel : Public
     System.String pername : Public
     Int32 txts : Public
     Int32 txts2 : Public
@@ -45,3 +46,13 @@ Class Project1.MyForm1: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
     Int32 ms : Public
     Int32 currentY : Public
     Int32 rightPosition : Public
+  Methods:
+    UpdateUIWithMessage(String): PrivateScope, Public, HideBySig
+    rcvmsg(): PrivateScope, Public, HideBySig
+Class Project1.MyForm1+UpdateUIDelegate: AutoLayout, AnsiClass, Class, NestedPublic, Sealed, BeforeFieldInit
+  :System.MulticastDelegate
+    Void .ctor(System.Object, IntPtr): PrivateScope, Public, SpecialName, RTSpecialName
+  Methods:
+    Invoke(String): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+    BeginInvoke(String, AsyncCallback, Object): PrivateScope, Public, Final, Virtual, VtableLayoutMask
+    EndInvoke(IAsyncResult): PrivateScope, Public, Final, Virtual, VtableLayoutMask

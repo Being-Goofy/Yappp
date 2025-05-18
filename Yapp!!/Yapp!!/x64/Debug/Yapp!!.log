@@ -1,8 +1,8 @@
 ﻿  signIn.cpp
-D:\New folder (2)\Yapp!!\Yapp!!\chat.h(105,70): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\New folder (2)\Yapp!!\Yapp!!\chat.h(114,70): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   (compiling source file 'signIn.cpp')
   
-D:\New folder (2)\Yapp!!\Yapp!!\chat.h(436,31): warning C4101: 'ex': unreferenced local variable
+D:\New folder (2)\Yapp!!\Yapp!!\chat.h(488,31): warning C4101: 'ex': unreferenced local variable
   (compiling source file 'signIn.cpp')
   
 D:\New folder (2)\Yapp!!\Yapp!!\signIn.cpp(10,6): warning C4829: Possibly incorrect parameters to function main. Consider 'int main(Platform::Array<Platform::String^>^ argv)'

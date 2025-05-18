@@ -5,6 +5,8 @@
 #include <thread>
 #include <cstdio>
 #include "round.h"
+#using <System.dll>
+
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma warning(disable:4996)
@@ -16,7 +18,9 @@ std::string textmsg;
 namespace Project1 {
 
     using namespace System;
+    using namespace System::Threading;
     using namespace Threading;
+    using System::Threading::Thread;
     using namespace System::ComponentModel;
     using namespace System::Collections;
     using namespace System::Windows::Forms;
@@ -61,6 +65,7 @@ namespace Project1 {
         void Connect() {
             CreateSocket();
             ConnectToServer();
+
         }
 
         void StartCommunication() {
@@ -93,6 +98,10 @@ namespace Project1 {
                 exit(1);
             }
 
+            // Assuming you have a global or member variable `uid` as std::string representing your user ID
+            send(clientSocket, uid.c_str(), (int)uid.length(), 0);
+
+
         }
 
         void SendMsg() {
@@ -109,23 +118,19 @@ namespace Project1 {
 
         }
 
-        void ReceiveMsg() {
+        std::string ReceiveMsg() {
             char buffer[4096];
             int recvLength;
-            std::string msg;
-            while (true) {
-                recvLength = recv(clientSocket, buffer, sizeof(buffer), 0);
-                if (recvLength <= 0) {
 
-                    break;
-                }
-                else {
-                    msg = std::string(buffer, recvLength);
-
-                }
+            recvLength = recv(clientSocket, buffer, sizeof(buffer), 0);
+            if (recvLength <= 0) {
+                return "";  // Disconnected or error
             }
-
+            else {
+                return std::string(buffer, recvLength);  // Return the message directly
+            }
         }
+
     };
 
     Client client("127.0.0.1", 55555);
@@ -133,6 +138,9 @@ namespace Project1 {
     public ref class MyForm1 : public System::Windows::Forms::Form
     {
     public:
+
+        Panel^ messagePanel = nullptr;
+
         MyForm1(void)
         {
             InitializeComponent();
@@ -145,6 +153,7 @@ namespace Project1 {
             msgpanels = gcnew List<Panel^>();
             textboxes = gcnew List<TextBox^>(); // Initialize the list of TextBoxes
             CreateNewPanel("You");  // Create the initial panel
+            messagePanel = msgpanels[0];
             currentPanelIndex = 0;
             panels[currentPanelIndex]->Visible = true;
             bckImage->BringToFront();
@@ -161,7 +170,29 @@ namespace Project1 {
             //connecting client
             client.Connect();
 
+            Thread^ rcvThread = gcnew Thread(gcnew ThreadStart(this, &MyForm1::rcvmsg));
+            rcvThread->IsBackground = true;
+            rcvThread->Start();
+
         }
+
+        delegate void UpdateUIDelegate(String^ msg);
+
+        void UpdateUIWithMessage(String^ msg) {
+            Label^ receivedmsg = ReceiveMessage(msg, currentY);
+
+            if (messagePanel != nullptr) {
+                messagePanel->Controls->Add(receivedmsg);
+                receivedmsg->BringToFront();
+                messagePanel->ScrollControlIntoView(receivedmsg);
+                currentY = receivedmsg->Bottom + 10;
+            }
+            else {
+                System::Diagnostics::Debug::WriteLine("Received msg: " + msg);
+
+            }
+        }
+
 
     private: System::Windows::Forms::PictureBox^ bckImage;
     public:
@@ -171,6 +202,27 @@ namespace Project1 {
         // 
         String^ pername;
         int txts, txts2, txtps, txtps2, msgp, msgp2, msgs, msgs2, ls, ms, currentY = 100, rightPosition;
+
+        void rcvmsg() {
+            while (true) {
+                std::string rawMsg = client.ReceiveMsg();  // Now it returns the msg
+
+                if (rawMsg.empty()) {
+                    continue;  // Nothing received, keep listening
+                }
+
+                String^ msg = msclr::interop::marshal_as<String^>(rawMsg);
+
+                System::Diagnostics::Debug::WriteLine("Received: " + msg);  // Log to Output window
+
+                UpdateUIDelegate^ del = gcnew UpdateUIDelegate(this, &MyForm1::UpdateUIWithMessage);
+                this->Invoke(del, msg);
+            }
+        }
+
+
+
+        
 
     protected:
         ~MyForm1()
@@ -705,7 +757,6 @@ namespace Project1 {
                Button^ clickedButton = safe_cast<Button^>(sender);
                Panel^ parentPanel = safe_cast<Panel^>(clickedButton->Parent);
                TextBox^ textBox = nullptr;
-               Panel^ messagePanel = nullptr;
 
                // Find the TextBox and messagePanel in the parent panel
                for each (Control ^ ctrl in parentPanel->Controls)
